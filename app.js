@@ -4,12 +4,12 @@ const api_key = '912ef887-6982-4247-a2e8-0c28ae96ec38:b177dbd6-6c16-42f3-ae24-d1
 
 const server = http.createServer((req, res) => {
     const authorization = req.headers.authorization;
-
     if (authorization !== api_key || authorization == undefined) {
         const errMsg = authorization == undefined ? 'No api key provided' : 'Invalid api key';
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.write(JSON.stringify({error: { status: 401, message: errMsg }}));
         res.end();
+        console.log(401, res.statusCode);
         return;
     }
     if (req.url == '/textSearch') {
@@ -21,6 +21,7 @@ const server = http.createServer((req, res) => {
         res.write(JSON.stringify({error: { status: 404, message: 'Endpoint not found' }}));
         res.end();
     }
+    console.log(401, res.statusCode);
 });
 
 server.listen(port, () => {
