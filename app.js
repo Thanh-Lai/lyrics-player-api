@@ -1,20 +1,28 @@
 const http = require("http");
-const hostname = '127.0.0.1';
-const port = 3000;
+const port = 23450;
+const api_key = '912ef887-6982-4247-a2e8-0c28ae96ec38:b177dbd6-6c16-42f3-ae24-d105a30ec2ec';
 
-//Create HTTP server and listen on port 3000 for requests
 const server = http.createServer((req, res) => {
-  const url = req.url;
-  //Set the response HTTP header with HTTP status and Content type
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/application/json');
-  if (url == 'textSearch') {
-    res.send({ message: 'api is online' });
-  }
-  res.end();
+    const authorization = req.headers.authorization;
+
+    if (authorization !== api_key || authorization == undefined) {
+        const errMsg = authorization == undefined ? 'No api key provided' : 'Invalid api key';
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify({error: { status: 401, message: errMsg }}));
+        res.end();
+        return;
+    }
+    if (req.url == '/textSearch') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify({ data: 'api is online' }));
+        res.end();
+    } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify({error: { status: 404, message: 'Endpoint not found' }}));
+        res.end();
+    }
 });
 
-//listen for request on port 3000, and as a callback function have the port listened on logged
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+server.listen(port, () => {
+  console.log(`Server running at ${port}/`);
 });
