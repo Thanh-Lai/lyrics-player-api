@@ -1,6 +1,8 @@
 const http = require("http");
+const os = require('os');
+const { api_key } = require('./secrets');
 const port = 23450;
-const api_key = '912ef887-6982-4247-a2e8-0c28ae96ec38:b177dbd6-6c16-42f3-ae24-d105a30ec2ec';
+const hostname = os.networkInterfaces()['lo0'][0].address;
 
 const server = http.createServer((req, res) => {
     const authorization = req.headers.authorization;
@@ -24,6 +26,6 @@ const server = http.createServer((req, res) => {
     console.log(res.statusCode, res.statusMessage);
 });
 
-server.listen(port, () => {
-  console.log(`Server running at ${port}/`);
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
 });
