@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.write(JSON.stringify({error: { status: 401, message: errMsg }}));
         res.end();
-        console.log(401, res.statusCode);
+        console.log(res.statusCode, res.statusMessage);
         return;
     }
     if (req.url == '/textSearch') {
@@ -21,7 +21,7 @@ const server = http.createServer((req, res) => {
         res.write(JSON.stringify({error: { status: 404, message: 'Endpoint not found' }}));
         res.end();
     }
-    console.log(401, res.statusCode);
+    console.log(res.statusCode, res.statusMessage);
 });
 
 server.listen(port, () => {
