@@ -19,5 +19,6 @@
   },
   "homepage": "https://github.com/Thanh-Lai/test-api#readme",
   "dependencies": {
+    "axios": "^0.21.0"
   }
 }
