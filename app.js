@@ -1,40 +1,70 @@
-const http = require('http');
+const express = require('express');
+const path = require('path');
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+const compression = require('compression');
 const url = require('url');
-const { API_KEY } = require('./secrets');
-const { fetchTextSearch } = require('./methods');
-const port = 23450;
+const cors = require('cors');
+const { fetchTextSearch, checkAuthorization } = require('./methods');
+const app = express();
+const PORT = 23450;
 
-const server = http.createServer((req, res) => {
-    const authorization = req.headers.authorization;
-    const urlParse = url.parse(req.url, true);
-    const pathName = urlParse.pathname;
-    const queryObject = urlParse.query;
+const createApp = () => {
+    app.use(cors());
 
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    if (!authorization || authorization !== API_KEY) {
-        const errMsg = authorization === undefined ? 'No api key provided' : 'Invalid api key';
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.write(JSON.stringify({error: { status: 401, message: errMsg }}));
-        res.end();
-        console.log(res.statusCode, res.statusMessage);
-        return;
-    }
-    if ( pathName === '/textSearch') {
+    // logging middleware
+    app.use(morgan('dev'));
+
+    // body parsing middleware
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: true }));
+
+    // compression middleware
+    app.use(compression());
+
+    app.use('/auth', require('./auth'));
+    // static file-serving middleware
+    app.use(express.static('dist'));
+    // any remaining requests with an extension (.js, .css, etc.) send 404
+    app.use((req, res, next) => {
+        if (path.extname(req.path).length) {
+            const err = new Error('Not found');
+            err.status = 404;
+            next(err);
+        } else {
+            next();
+        }
+    });
+
+    app.get('/textSearch', (req, res, next) => {
+        const urlParse = url.parse(req.url, true);
+        const queryObject = urlParse.query;
+        const authorization = checkAuthorization(req.headers.authorization);
+        if (Object.keys(authorization).length) {
+            res.send(authorization);
+            return;
+        }
         fetchTextSearch(queryObject)
-        .then((response) => {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify({ data: response }));
-            res.end();
-            console.log(res.statusCode, res.statusMessage);
-        })
-    } else {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.write(JSON.stringify({error: { status: 404, message: 'Endpoint not found' }}));
-        res.end();
-        console.log(res.statusCode, res.statusMessage);
-    }
-});
+            .then((data) => {
+                res.send(data);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    });
 
-server.listen(port, () => {
-  console.log(`Server running at ${port}/`);
-});
+    // error handling endware
+    app.use((err, req, res, next) => {
+        console.error(err);
+        console.error(err.stack);
+        res.sendStatus(err.status || 500).send(err.message || 'Internal server error.');
+    });
+
+};
+
+const startListening = () => {
+    app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+};
+
+createApp();
+startListening();

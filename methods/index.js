@@ -1,3 +1,4 @@
 module.exports = {
-    fetchTextSearch: require('./fetchTextSearch')
+    fetchTextSearch: require('./fetchTextSearch'),
+    checkAuthorization: require('./checkAuthorization')
 }
