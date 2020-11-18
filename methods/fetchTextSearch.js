@@ -9,22 +9,22 @@ module.exports = async function(queryObject) {
     const uriEncodeInput = encodeURI(query);
     const geniusAPI = 'https://genius.com/api';
     const spotifyAPI = '	https://api.spotify.com';
-    const songOrLyric = type === 'lyrics' ? 'search/lyrics' : 'search/';
+    const songOrLyric = type === 'lyric' ? 'search/lyrics' : 'search/';
     const spotifyToken = await axios.get('http://localhost:23450/auth/token', {
         headers: {
             Authorization: API_KEY
         }
     });
     const geniusData = await axios.get(`${geniusAPI}/${songOrLyric}?q=${uriEncodeInput}&per_page=20`);
-    const geniusResult = type === 'lyrics'
+    const geniusResult = type === 'lyric'
         ? geniusData.data.response.sections[0].hits
         : geniusData.data.response.hits;
 
     geniusResult.forEach(async (hit) => {
         const songID = hit.result.id;
-        const lyricsSnippet = type === 'lyrics' ? hit.highlights[0].value : null;
-        const isMatch = type === 'lyrics'
-            ? lyricsSnippet.toLowerCase().includes(query.toLowerCase())
+        const lyricSnippet = type === 'lyric' ? hit.highlights[0].value : null;
+        const isMatch = type === 'lyric'
+            ? lyricSnippet.toLowerCase().includes(query.toLowerCase())
             : hit.result.title.toLowerCase().includes(query.toLowerCase());
         const songApiPath = hit.result.api_path;
         // Future task: compare value with snippet and display songs with 80% match
@@ -33,7 +33,7 @@ module.exports = async function(queryObject) {
         if (!isMatch) return;
         songInfo[songID] = songInfo[songID] || {};
         songInfo[songID]['type'] = hit.index;
-        songInfo[songID]['snippet'] = lyricsSnippet;
+        songInfo[songID]['snippet'] = lyricSnippet;
         promisesGenius.push(axios.get(`${geniusAPI}${songApiPath}`));
     });
     const allMatchedSongs = await Promise.all(promisesGenius);
@@ -44,7 +44,7 @@ module.exports = async function(queryObject) {
         const currSongID = currSong.id;
         const title = currSong.title;
         const album = currSong.album;
-        const artist = album ? album.artist.name : '';
+        const artist = currSong.primary_artist.name ? currSong.primary_artist.name : album.artist.name;
         const spotifySearch = `${title} ${artist}`;
         const uriEncodeSong = encodeURI(spotifySearch);
 
@@ -65,6 +65,7 @@ module.exports = async function(queryObject) {
         songInfo[currSongID]['image'] = currSong.header_image_thumbnail_url;
         songInfo[currSongID]['lyricsURL'] = currSong.share_url;
         songInfo[currSongID]['spotifyQuery'] = spotifySearch;
+        songInfo[currSongID]['spotifyToken'] = spotifyToken.data.access_token;
     });
     const spotifyResults = await Promise.all(promisesSpotify);
 
