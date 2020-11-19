@@ -28,9 +28,7 @@ module.exports = async function(queryObject) {
         const snippet = type === 'lyric' ? lyricSnippet.toLowerCase() : hit.result.title.toLowerCase();
         const distance = levenshteinDistance(input, snippet);
         const songApiPath = hit.result.api_path;
-        // Future task: compare value with snippet and display songs with 80% match
-        // Match words like fallin' vs fallin vs falling, & vs and
-        // For now, match is based on exact match
+
         if (distance > 75) return;
         songInfo[songID] = songInfo[songID] || {};
         songInfo[songID]['type'] = hit.index;
