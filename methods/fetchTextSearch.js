@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { API_KEY } = require('../secrets');
+const levenshteinDistance  = require('./levenshteinDistance');
 
 module.exports = async function(queryObject) {
     const songInfo = {};
@@ -23,17 +24,18 @@ module.exports = async function(queryObject) {
     geniusResult.forEach(async (hit) => {
         const songID = hit.result.id;
         const lyricSnippet = type === 'lyric' ? hit.highlights[0].value : null;
-        const isMatch = type === 'lyric'
-            ? lyricSnippet.toLowerCase().includes(query.toLowerCase())
-            : hit.result.title.toLowerCase().includes(query.toLowerCase());
+        const input = query.toLowerCase();
+        const snippet = type === 'lyric' ? lyricSnippet.toLowerCase() : hit.result.title.toLowerCase();
+        const distance = levenshteinDistance(input, snippet);
         const songApiPath = hit.result.api_path;
         // Future task: compare value with snippet and display songs with 80% match
         // Match words like fallin' vs fallin vs falling, & vs and
         // For now, match is based on exact match
-        if (!isMatch) return;
+        if (distance > 75) return;
         songInfo[songID] = songInfo[songID] || {};
         songInfo[songID]['type'] = hit.index;
         songInfo[songID]['snippet'] = lyricSnippet;
+        songInfo[songID]['levenshteinDistance'] = distance;
         promisesGenius.push(axios.get(`${geniusAPI}${songApiPath}`));
     });
     const allMatchedSongs = await Promise.all(promisesGenius);
@@ -65,7 +67,6 @@ module.exports = async function(queryObject) {
         songInfo[currSongID]['image'] = currSong.header_image_thumbnail_url;
         songInfo[currSongID]['lyricsURL'] = currSong.share_url;
         songInfo[currSongID]['spotifyQuery'] = spotifySearch;
-        songInfo[currSongID]['spotifyToken'] = spotifyToken.data.access_token;
     });
     const spotifyResults = await Promise.all(promisesSpotify);
 
