@@ -7,7 +7,7 @@ const url = require('url');
 const cors = require('cors');
 const { fetchTextSearch, checkAuthorization } = require('./methods');
 const app = express();
-const PORT = 23450;
+const PORT = 8888;
 
 const createApp = () => {
     app.use(cors());
@@ -21,7 +21,6 @@ const createApp = () => {
 
     // compression middleware
     app.use(compression());
-
     app.use('/auth', require('./auth'));
     // static file-serving middleware
     app.use(express.static('dist'));
