@@ -5,17 +5,17 @@ const levenshteinDistance  = require('./levenshteinDistance');
 module.exports = async function(queryObject) {
     const songInfo = {};
     const promisesGenius = [];
-    const promisesSpotify = [];
+    // const promisesSpotify = [];
     const { query, type } = queryObject;
     const uriEncodeInput = encodeURI(query);
     const geniusAPI = 'https://genius.com/api';
-    const spotifyAPI = '	https://api.spotify.com';
+    // const spotifyAPI = '	https://api.spotify.com';
     const songOrLyric = type === 'lyric' ? 'search/lyrics' : 'search/';
-    const spotifyToken = await axios.get('http://localhost:23450/auth/token', {
-        headers: {
-            Authorization: API_KEY
-        }
-    });
+    // const spotifyToken = await axios.get('http://localhost:23450/auth/token', {
+    //     headers: {
+    //         Authorization: API_KEY
+    //     }
+    // });
     const geniusData = await axios.get(`${geniusAPI}/${songOrLyric}?q=${uriEncodeInput}&per_page=20`);
     const geniusResult = type === 'lyric'
         ? geniusData.data.response.sections[0].hits
@@ -46,16 +46,16 @@ module.exports = async function(queryObject) {
         const album = currSong.album;
         const artist = currSong.primary_artist.name ? currSong.primary_artist.name : album.artist.name;
         const spotifySearch = `${title} ${artist}`;
-        const uriEncodeSong = encodeURI(spotifySearch);
+        // const uriEncodeSong = encodeURI(spotifySearch);
 
-        promisesSpotify.push(axios.get(`${spotifyAPI}/v1/search?q=${uriEncodeSong}&type=track&limit=1`, {
-            params: {
-                geniusSongID: currSongID
-            },
-            headers: {
-                Authorization: `Bearer ${spotifyToken.data.access_token}`
-            }
-        }));
+        // promisesSpotify.push(axios.get(`${spotifyAPI}/v1/search?q=${uriEncodeSong}&type=track&limit=1`, {
+        //     params: {
+        //         geniusSongID: currSongID
+        //     },
+        //     headers: {
+        //         Authorization: `Bearer ${spotifyToken.data.access_token}`
+        //     }
+        // }));
         songInfo[currSongID] = songInfo[currSongID] || {};
         songInfo[currSongID]['id'] = currSongID;
         songInfo[currSongID]['title'] = title;
@@ -66,15 +66,15 @@ module.exports = async function(queryObject) {
         songInfo[currSongID]['lyricsURL'] = currSong.share_url;
         songInfo[currSongID]['spotifyQuery'] = spotifySearch;
     });
-    const spotifyResults = await Promise.all(promisesSpotify);
+    // const spotifyResults = await Promise.all(promisesSpotify);
 
-    spotifyResults.forEach((spotifySong) => {
-        const geniusID = spotifySong.config.params.geniusSongID;
-        const spotifySongItem = spotifySong.data.tracks.items[0];
-        songInfo[geniusID]['spotifyID'] = spotifySongItem ? spotifySongItem.id : null;
-        songInfo[geniusID]['spotifyUri'] = spotifySongItem ? spotifySongItem.uri : null;
-        songInfo[geniusID]['spotifyExternalUrl'] = spotifySongItem ? spotifySongItem.external_urls.spotify : null;
-    });
+    // spotifyResults.forEach((spotifySong) => {
+    //     const geniusID = spotifySong.config.params.geniusSongID;
+    //     const spotifySongItem = spotifySong.data.tracks.items[0];
+    //     songInfo[geniusID]['spotifyID'] = spotifySongItem ? spotifySongItem.id : null;
+    //     songInfo[geniusID]['spotifyUri'] = spotifySongItem ? spotifySongItem.uri : null;
+    //     songInfo[geniusID]['spotifyExternalUrl'] = spotifySongItem ? spotifySongItem.external_urls.spotify : null;
+    // });
 
     return songInfo;
 }

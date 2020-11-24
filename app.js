@@ -11,7 +11,6 @@ const PORT = 8888;
 
 const createApp = () => {
     app.use(cors());
-
     // logging middleware
     app.use(morgan('dev'));
 
