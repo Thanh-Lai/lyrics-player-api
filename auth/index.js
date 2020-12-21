@@ -27,7 +27,8 @@ router.get('/login', (req, res, next) => {
     const scopesList = [
                         'user-read-private', 'user-read-email', 'user-read-playback-state',
                         'user-modify-playback-state', 'playlist-read-private',
-                        'playlist-modify-public', 'playlist-modify-private'
+                        'playlist-modify-public', 'playlist-modify-private',
+                        'user-read-currently-playing', 'app-remote-control', 'streaming'
                     ];
     const scopes = scopesList.join(' ');
     res.send('https://accounts.spotify.com/authorize?' +
@@ -81,10 +82,10 @@ router.get('/loginStatus', (req, res, next) => {
         return;
     }
     const exists = myCache.has('spotify_auth_token');
-    const loginInfo = myCache.get('spotify_auth_token');
+    const token = myCache.get('spotify_auth_token');
     if (exists) {
         axios.get('https://api.spotify.com/v1/me', {
-            headers: { Authorization: 'Bearer ' + loginInfo.access_token },
+            headers: { Authorization: 'Bearer ' + token.access_token },
         }).then((info) => {
             res.send(info.data);
         }).catch((err) => {
@@ -100,25 +101,65 @@ router.get('/logout', (req, res, next) => {
     res.send('http://localhost:3000');
 })
 
-// router.get('/token', (req, res, next) => {
-//     const authorization = checkAuthorization(req.headers.authorization);
-//     if (Object.keys(authorization).length) {
-//         res.send(authorization);
-//         return;
-//     }
-//     axios({
-//         method: 'post',
-//         url: 'https://accounts.spotify.com/api/token',
-//         headers: {
-//           Authorization: `Basic ${Buffer.from(SPOTIFY_AUTH_TOKEN).toString('base64')}`
-//         },
-//         params: {
-//           'grant_type': 'client_credentials'
-//         },
-//         json: true
-//       }).then((token) => {
-//             res.send(token.data);
-//     }).catch((err) => {
-//         console.log(err);
-//     });
-// });
+router.get('/accessToken', (req, res, next) => {
+    const authorization = checkAuthorization(req.headers.authorization);
+    if (Object.keys(authorization).length) {
+        res.send(authorization);
+        return;
+    }
+    const exists = myCache.has('spotify_auth_token');
+    const token = myCache.get('spotify_auth_token');
+    if (exists) {
+        res.send(token.access_token);
+    } else {
+        res.send('No Token');
+    }
+})
+
+router.get('/token', (req, res, next) => {
+    const authorization = checkAuthorization(req.headers.authorization);
+    if (Object.keys(authorization).length) {
+        res.send(authorization);
+        return;
+    }
+    axios({
+        method: 'post',
+        url: 'https://accounts.spotify.com/api/token',
+        headers: {
+          Authorization: `Basic ${Buffer.from(SPOTIFY_AUTH_TOKEN).toString('base64')}`
+        },
+        params: {
+          'grant_type': 'client_credentials'
+        },
+        json: true
+      }).then((token) => {
+            res.send(token.data);
+    }).catch((err) => {
+        console.log(err);
+    });
+});
+
+router.get('/refreshToken', (req, res, next) => {
+    const authorization = checkAuthorization(req.headers.authorization);
+    const token = myCache.get('spotify_auth_token');
+    if (Object.keys(authorization).length) {
+        res.send(authorization);
+        return;
+    }
+    axios({
+        method: 'post',
+        url: 'https://accounts.spotify.com/api/token',
+        headers: {
+          Authorization: `Basic ${Buffer.from(SPOTIFY_AUTH_TOKEN).toString('base64')}`
+        },
+        params: {
+          'grant_type': 'refresh_token',
+          'refresh_token': token.refresh_token
+        },
+        json: true
+      }).then((result) => {
+          res.send(result.data.access_token);
+    }).catch((err) => {
+        console.log(err);
+    });
+});

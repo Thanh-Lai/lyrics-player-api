@@ -21,6 +21,7 @@ const createApp = () => {
     // compression middleware
     app.use(compression());
     app.use('/auth', require('./auth'));
+
     // static file-serving middleware
     app.use(express.static('dist'));
     // any remaining requests with an extension (.js, .css, etc.) send 404
