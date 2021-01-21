@@ -4,8 +4,7 @@ const querystring = require('querystring');
 const NodeCache = require('node-cache');
 const myCache = new NodeCache();
 const { checkAuthorization } = require('../methods');
-const { SPOTIFY_AUTH_TOKEN, spotifyClientID, spotifyRedirectUri } = require('../secrets');
-const location = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://www.lyricsplayer.tk';
+const { SPOTIFY_AUTH_TOKEN, spotifyClientID, spotifyRedirectUri, LOCATION } = require('../secrets');
 module.exports = router;
 
 const generateRandomString = function(length) {
@@ -74,7 +73,7 @@ router.get('/callback', function(req, res) {
     }).catch((err) => {
         console.log(err);
     })
-    res.redirect(location);
+    res.redirect(LOCATION);
 });
 
 router.get('/loginStatus', (req, res, next) => {
@@ -100,7 +99,7 @@ router.get('/loginStatus', (req, res, next) => {
 
 router.get('/logout', (req, res, next) => {
     myCache.del('spotify_auth_token');
-    res.send(location);
+    res.send(LOCATION);
 })
 
 router.get('/accessToken', (req, res, next) => {
