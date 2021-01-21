@@ -5,7 +5,7 @@ const NodeCache = require('node-cache');
 const myCache = new NodeCache();
 const { checkAuthorization } = require('../methods');
 const { SPOTIFY_AUTH_TOKEN, spotifyClientID, spotifyRedirectUri } = require('../secrets');
-const location = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://www.lyricsplayer.tk';
+const location = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://www.lyricsplayer.tk';
 module.exports = router;
 
 const generateRandomString = function(length) {
