@@ -1,6 +1,7 @@
 const axios = require('axios');
-const { API_KEY, ENV } = require('../secrets');
+const { API_KEY } = require('../secrets');
 const levenshteinDistance  = require('./levenshteinDistance');
+const ENV = process.env.NODE_ENV === 'development' ? 'http://localhost:8888' : 'https://api.lyricsplayer.tk';
 
 module.exports = async function(queryObject) {
     const songInfo = {};
