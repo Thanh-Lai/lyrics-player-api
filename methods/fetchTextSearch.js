@@ -29,7 +29,7 @@ module.exports = async function(queryObject) {
         const distance = levenshteinDistance(input, snippet);
         const songApiPath = hit.result.api_path;
 
-        if (distance > 75) return;
+        if (distance > 80) return;
         songInfo[songID] = songInfo[songID] || {};
         songInfo[songID]['type'] = hit.index;
         songInfo[songID]['snippet'] = lyricSnippet;
