@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "NODE_ENV=production nodemon app.js",
+    "postinstall": "touch secrets.js",
     "dev": "NODE_ENV=development nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
