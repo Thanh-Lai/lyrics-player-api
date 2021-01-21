@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { API_KEY } = require('../secrets');
+const { API_KEY, ENV } = require('../secrets');
 const levenshteinDistance  = require('./levenshteinDistance');
 
 module.exports = async function(queryObject) {
@@ -11,7 +11,7 @@ module.exports = async function(queryObject) {
     const geniusAPI = 'https://genius.com/api';
     const spotifyAPI = 'https://api.spotify.com';
     const songOrLyric = type === 'lyric' ? 'search/lyrics' : 'search/';
-    const spotifyToken = await axios.get('http://localhost:8888/auth/token', {
+    const spotifyToken = await axios.get(ENV + '/auth/token', {
         headers: {
             Authorization: API_KEY
         }
