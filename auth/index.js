@@ -82,19 +82,13 @@ router.get('/loginStatus', (req, res, next) => {
         res.send(authorization);
         return;
     }
-    const exists = myCache.has('spotify_auth_token');
-    const token = myCache.get('spotify_auth_token');
-    if (exists) {
-        axios.get('https://api.spotify.com/v1/me', {
-            headers: { Authorization: 'Bearer ' + token.access_token },
-        }).then((info) => {
-            res.send(info.data);
-        }).catch((err) => {
-            console.log(err);
-        });
-    } else {
-        res.send({});
-    }
+    axios.get('https://api.spotify.com/v1/me', {
+        headers: { Authorization: 'Bearer ' + req.query.token },
+    }).then((info) => {
+        res.send(info.data);
+    }).catch((err) => {
+        console.log(err);
+    });
 });
 
 router.get('/logout', (req, res, next) => {
@@ -111,6 +105,7 @@ router.get('/accessToken', (req, res, next) => {
     const exists = myCache.has('spotify_auth_token');
     const token = myCache.get('spotify_auth_token');
     if (exists) {
+        myCache.del('spotify_auth_token');
         res.send(token);
     } else {
         res.send('No Token');
